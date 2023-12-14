@@ -1,10 +1,26 @@
 import styled from 'styled-components';
 import Select from './Select.jsx';
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import {getDirections, getGroups} from "../services/requests.js";
 
 const FilterModal = (props) => {
   const {isActive, handleFilterShow, setFilters, filterReset} = props;
   const [filtersBefore, setFiltersBefore] = useState([]);
+  const [filtersOptions, setFiltersOptions] = useState({
+      'Семестр': [1, 2, 3, 4, 5, 6, 7, 8],
+      'Направление': [],
+      'Группа': []
+  });
+
+    useEffect(() => {
+        getDirections().then(res => {
+            setFiltersOptions(prev => ({...prev, 'Направление': res}));
+        })
+        getGroups().then(res => {
+            setFiltersOptions(prev => ({...prev, 'Группа': res}));
+        })
+    }, []);
+
 
 
   const handleReset = () => {
@@ -35,9 +51,9 @@ const FilterModal = (props) => {
     <Container className={isActive ? 'active' : ''}>
         <Title>Фильтр</Title>
         <SelectDiv>
-            <Select onChange={handleChange} options={[{value: '1', label: '1'}, {value: '2', label: '2'}, {value: '3', label: '3'}]} label={'Семестр'} />
-            <Select onChange={handleChange} options={[]} label={'Направление'} />
-            <Select onChange={handleChange} options={[]} label={'Группа'} />
+            <Select onChange={handleChange} options={filtersOptions.Семестр} label={'Семестр'} />
+            <Select onChange={handleChange} options={filtersOptions.Направление} label={'Направление'} />
+            <Select onChange={handleChange} options={filtersOptions.Группа} label={'Группа'} />
         </SelectDiv>
         <ButtonDiv>
             <Button onClick={handleReset}>Сбросить</Button>
@@ -55,17 +71,18 @@ const Container = styled.div`
   border-radius: 20px;
   background: #FFF;
   box-shadow: 0px 4px 47.6px 0px rgba(30, 30, 30, 0.20);
-  top: 55px;
-  right: -75px;
+  top: 0;
+  right: -5px;
   padding: 30px 20px;
   min-width: 270px;
-  transition: all .5s;
+  transition: opacity .5s, top .5s;
   pointer-events: none;
   
   &.active {
     opacity: 1;
     pointer-events: all;
-    right: -5px;
+    top: 55px;
+    //right: -5px;
   }
 `
 

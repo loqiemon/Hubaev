@@ -4,6 +4,8 @@ import {Navbar} from "./components/Navbar.jsx";
 import {Route, Routes} from "react-router-dom";
 import styled from "styled-components";
 import {LearningPage} from "./pages/LearningPage.jsx";
+import {SettingPage} from "./pages/SettingPage.jsx";
+import {CreativityPage} from "./pages/CreativityPage.jsx";
 
 function App() {
   return (
@@ -11,7 +13,8 @@ function App() {
         <Navbar/>
         <Routes>
             <Route path="/" element={<LearningPage/>}/>
-            <Route path="/about" element={<div>About</div>}/>
+            <Route path="/setting" element={<SettingPage/>}/>
+            <Route path="/Creativity" element={<CreativityPage/>}/>
         </Routes>
     </Container>
   )
