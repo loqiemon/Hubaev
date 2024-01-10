@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import {useState} from "react";
-
+import {useLocation, useNavigate, useParams} from 'react-router-dom';
 
 const types = {
     'Направления': {name: 'directions', columns: 1},
@@ -20,22 +20,41 @@ const ModalForm = (props) => {
         'Студенты': [],
         'Учебные планы': []
     });
+    const location = useLocation();
+
+    const { search } = location;
+    const queryParams = new URLSearchParams(search);
+
+
+    const locationParam = queryParams.get('location');
     const isSelected = (name) => {
-        return type === name ? 'active' : '';
+        console.log(locationParam)
+        if (!locationParam && name === 'Направления') {
+            return 'active';
+        }
+        return locationParam === name ? 'active' : '';
     }
 
+
+    const navigate = useNavigate();
     const handleClick = (type) => {
         setType(type);
+        navigate({
+            pathname: window.location.pathname,
+            search: `?location=${type}`,
+        });
     }
+
   return (
     <Container>
         <Title>Добавить</Title>
         <Links>
-            <Link className={isSelected('Направления')} onClick={_ => handleClick('Направления')} >Направления</Link>
-            <Link className={isSelected('Дисциплины')} onClick={_ => handleClick('Дисциплины')}>Дисциплины</Link>
-            <Link className={isSelected('Группы')} onClick={_ => handleClick('Группы')}>Группы</Link>
-            <Link className={isSelected('Студенты')} onClick={_ => handleClick('Студенты')} >Студенты</Link>
-            <Link className={isSelected('Учебные планы')} onClick={_ => handleClick('Учебные планы')}>Учебные планы</Link>
+            <Link className={isSelected('Направления')} onClick={_ => handleClick('Направления')} >Направление</Link>
+            <Link className={isSelected('Дисциплины')} onClick={_ => handleClick('Дисциплины')}>Дисциплину</Link>
+            <Link className={isSelected('Группы')} onClick={_ => handleClick('Группы')}>Группу</Link>
+            <Link className={isSelected('Студенты')} onClick={_ => handleClick('Студенты')} >Студента</Link>
+            <Link className={isSelected('Учебные планы')} onClick={_ => handleClick('Учебные планы')}>Учебный план</Link>
+            <Link className={isSelected('Оценки')} onClick={_ => handleClick('Оценки')}>Оценку</Link>
         </Links>
         <Line/>
         {children}

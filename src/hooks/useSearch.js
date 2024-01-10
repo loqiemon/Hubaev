@@ -22,9 +22,7 @@ export const useSearch = (props) => {
         try {
             if (search) {
                 setSearchedArray(props.array.filter(item => {
-
                     const obj = Object.values(copyObjectWithoutIdFields(item)).join(' ').toLowerCase();
-                    console.log(obj)
                     return obj.includes(search.toLowerCase())
                 }));
             } else {

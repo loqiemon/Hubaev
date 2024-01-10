@@ -1,4 +1,5 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
+import React from "react";
 
 
 import styled, { keyframes } from 'styled-components';
@@ -8,8 +9,14 @@ import CloseIcon from '../assets/close.svg?react';
 import {useSearch} from "../hooks/useSearch.js";
 
 import {FilterModal} from "../components/FilterModal.jsx";
+import {Loader} from "../components/Loader.jsx";
+import {useFilter} from "../hooks/useFilter.jsx";
+import {getStudents} from "../services/userService.js";
+import {getProfScore, getProfScoreResult} from "../services/profScoreService.js";
+import {Link} from "react-router-dom";
 
-const mock = [
+
+export const mock = [
     {
         title: "cредний профессиональный коэффициент",
         value: 100,
@@ -37,78 +44,55 @@ const mock = [
     }
 ]
 
-const mockPeople = [
-    {
-        name: "Иванов И.И.",
-        id: 1,
-        group: 'ИСТ-342',
-        course: '1',
-        direction: '1008786',
-        coefficient: 0.8
-    },
-    {
-        name: "Иванов И.И.",
-        id: 1,
-        group: 'ИСТ-342',
-        course: '1',
-        direction: '1008786',
-        coefficient: 0.8
-    },
-    {
-        name: "Иванов И.И.",
-        id: 1,
-        group: 'ИСТ-342',
-        course: '1',
-        direction: '1008786',
-        coefficient: 0.8
-    },
-    {
-        name: "Иванов И.И.",
-        id: 1,
-        group: 'ИСТ-342',
-        course: '1',
-        direction: '1008786',
-        coefficient: 0.8
-    }
-]
 
 const LearningPage = (props) => {
   const {} = props
-const [stats, setStats] = useState(mock);
-const [filters, setFilters] = useState([{name: "Фильтр 1"}, {name: "Фильтр 2"}, {name: "Фильтр 3"}]);
-const [peopleStats, setpeopleStats] = useState(mockPeople);
-const {search, setSearch, searchedArray, setSearchedArray} = useSearch({array: mockPeople});
-const [filterShow, setfilterShow] = useState(false);
-const [resetFilters, setResetFilters] = useState(false);
+    const [stats, setStats] = useState(mock);
 
-const filterReset = () => {
-    let timer;
-    clearTimeout(timer);
-
-    setResetFilters(true);
-
-    timer = setTimeout(() => {
-        setFilters([]);
-        setResetFilters(false);
-    }, 500)
-
-}
+    const [filters, setFilters] = useState([]);
+    const [peopleStats, setpeopleStats] = useState([]);
+    const {search, setSearch, searchedArray, setSearchedArray} = useSearch({array: peopleStats});
+    const [filterShow, setfilterShow] = useState(false);
+    const [resetFilters, setResetFilters] = useState(false);
 
 
-const handleFilterShow = () => {
-    setfilterShow(prev => {
-        if (!prev) {
+    useEffect(() => {
+        getProfScoreResult(filters)
+            .then(res => setpeopleStats(res))
+            .catch(err => console.log(err))
+    }, [filters]);
 
-        }
-        return !prev
-    });
-}
+    const filterReset = () => {
+        let timer;
+        clearTimeout(timer);
 
-const handleDeleteFilter = (index) => {
-    setFilters(prev => {
-        return prev.filter((item, i) => i !== index)
-    })
-}
+        setResetFilters(true);
+
+        timer = setTimeout(() => {
+            setFilters([]);
+            setResetFilters(false);
+        }, 500)
+
+    }
+
+
+    const handleFilterShow = () => {
+        setfilterShow(prev => {
+            if (!prev) {
+
+            }
+            return !prev
+        });
+    }
+
+    const handleDeleteFilter = (filterKey) => {
+        setFilters(prev => {
+            const { [filterKey]: deletedFilter, ...rest } = prev;
+            console.log(rest);
+            return rest;
+        });
+    };
+
 
   return (
     <Container>
@@ -129,13 +113,13 @@ const handleDeleteFilter = (index) => {
         <SubContainer>
             <Filters>
                 <LeftFilters>
-                    {filters.map((filter, index) => (
+                    {Object.entries(filters).map(([key, filter], index) => (
                         <Filter
                             key={filter.name}
                             className={`filter-enter ${index} ${resetFilters ? 'filter-exit' : ''}`}
                         >
-                            <span>{filter.name}</span>
-                            <CloseIcon style={{stroke: '#212121'}} onClick={() => handleDeleteFilter(index)}/>
+                            <span>{key === 'semester' ? `Семестр ${filter}` : filter}</span>
+                            <CloseIcon style={{stroke: '#212121'}} onClick={() => handleDeleteFilter(key)}/>
                         </Filter>
                     ))}
                 </LeftFilters>
@@ -153,6 +137,7 @@ const handleDeleteFilter = (index) => {
                     />
                 </RightFilters>
             </Filters>
+            <Loader/>
             <Table>
                 <span>ФИО</span>
                 <span>Группа</span>
@@ -160,13 +145,13 @@ const handleDeleteFilter = (index) => {
                 <span>Направление</span>
                 <span>Профессиональный коэффициент</span>
                 {searchedArray.map((stat) => (
-                    <>
-                        <span>{stat.name}</span>
-                        <span>{stat.group}</span>
-                        <span>{stat.course}</span>
-                        <span>{stat.direction}</span>
-                        <span>{stat.coefficient}</span>
-                    </>
+                    <React.Fragment key={stat.id}>
+                        <SpanLink to={`/student/${stat.id}`}>{stat.fio}</SpanLink>
+                        <span>{stat.group_name}</span>
+                        <span>{stat.group_name[5]}</span>
+                        <span>{stat.direction_name}</span>
+                        <span>{stat.score}</span>
+                    </React.Fragment>
                 ))}
             </Table>
         </SubContainer>
@@ -176,11 +161,26 @@ const handleDeleteFilter = (index) => {
 
 export {LearningPage};
 
+const SpanLink = styled(Link)`
+  padding-bottom: 10px;
+  margin-top: 15px;
+  font-size: 16px;
+  font-weight: 500;
+  border-bottom: 1px solid #dcdcdc;
+  cursor: pointer;
+  transition: all .3s;
+  
+  &:hover {
+    color: #8B5FF6;
+    transform: scale(1.07);
+  }
+`
+
 
 const Table = styled.div`
   margin-top: 15px;
   display: grid;
-  grid-template-columns: 1fr 110px 65px 140px .5fr;
+  grid-template-columns: 1fr 110px 65px 165px .5fr;
   grid-auto-flow: row;
   color: #212121;
   span {

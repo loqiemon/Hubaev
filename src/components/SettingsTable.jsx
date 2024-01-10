@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 import react from "react";
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 
 const SettingsTable = (props) => {
   const {columns, labels, data, fields} = props;
@@ -14,6 +16,10 @@ const SettingsTable = (props) => {
                   {fields.map((field, idx) => (
                       <span key={idx}>{item[field]}</span>
                   ))}
+                 <Buttons>
+                     <Edit onClick={_ => props.onEdit(item)}/>
+                     <Delete  onClick={_ => props.onDelete(item.id)}/>
+                 </Buttons>
                 </react.Fragment>
         ))}
       </Table>
@@ -23,7 +29,39 @@ const SettingsTable = (props) => {
 export {SettingsTable};
 
 const Container = styled.div`
-  
+  transition: all .3s;
+  &:hover {
+    transform: scale(1.03);
+    color: #8B5FF6;
+  }
+`
+
+const Delete = styled(DeleteIcon)`
+  transition: all .3s;
+
+  &:hover {
+    transform: scale(1.03);
+    color: #de1938;
+  }
+`
+
+const Edit = styled(EditIcon)`
+  transition: all .3s;
+  &:hover {
+    transform: scale(1.1);
+    color: #8B5FF6;
+  }
+`
+
+const Item = styled.div`
+  display: flex;
+  justify-content: space-between;
+`
+
+const Buttons = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 7px;
 `
 
 const Table = styled.div`

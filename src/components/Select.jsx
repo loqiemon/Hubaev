@@ -16,10 +16,13 @@ export default function NativeSelectDemo(props) {
                         name: '',
                         id: 'uncontrolled-native',
                     }}
+                    value={props.value}
                     onChange={props.onChange}
+
                 >
+                    <option  value={''}></option>
                     {props.options.map((option) => (
-                        <option key={option.value} value={option.value}>{option.value}</option>
+                        <option key={option.value} value={option[props.value_field]}>{option.value}</option>
                     ))}
                 </NativeSelect>
             </FormControl>

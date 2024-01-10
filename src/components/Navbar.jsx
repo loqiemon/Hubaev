@@ -5,13 +5,21 @@ import {createPortal} from "react-dom";
 import {Modal} from "./Modal.jsx";
 import {ModalForm} from "./ModalForm.jsx";
 import {DirectionForm} from "./AddForms/DirectionForm.jsx";
+import {DisciplineForm} from "./AddForms/DisciplineForm.jsx";
+import {GroupForm} from "./AddForms/GroupForm.jsx";
+import {StudentForm} from "./AddForms/StudentForm.jsx";
+import {CurriculumForm} from "./AddForms/CurriculumForm.jsx";
+import {MarkForm} from "./AddForms/MarkForm.jsx";
 
 const Navbar = (props) => {
   const {} = props;
   const location = useLocation();
+  const { search } = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [form, setForm] = useState({});
 
+  const queryParams = new URLSearchParams(search);
+  const param1 = queryParams.get('location');
 
 
   const isActive = (path) => {
@@ -28,13 +36,19 @@ const Navbar = (props) => {
         <Links>
             <Link to="/" className={isActive("/")}>Учебная активность</Link>
             <Link to="/creativity" className={isActive("/creativity")}>Творческая активность</Link>
-            <Link to="/setting" className={isActive("/setting")}>Управление группами</Link>
+            <Link to="/setting-group" className={isActive("/setting-group?location=Направления")}>Управление группами</Link>
+            <Link to="/setting-event/events" className={isActive("/setting-event")}>Управление мероприятиями</Link>
         </Links>
-        <Button className={location.pathname === '/setting' ? 'active' : ''} onClick={handleClick} >Добавить</Button>
+        <Button className={location.pathname === '/setting-group' ? 'active' : ''} onClick={handleClick} >Добавить</Button>
         {isOpen && createPortal(
             <Modal setIsOpen={setIsOpen} isOpen={isOpen} >
                 <ModalForm>
-                    <DirectionForm form={form} setForm={setForm}/>
+                    {!param1 || param1 === 'Направления' && <DirectionForm form={form} setForm={setForm} setIsOpen={setIsOpen} />}
+                    {param1 && param1 === 'Группы' && <GroupForm form={form} setForm={setForm} setIsOpen={setIsOpen}/>}
+                    {param1 && param1 === 'Дисциплины' && <DisciplineForm form={form} setForm={setForm} setIsOpen={setIsOpen}/>}
+                    {param1 && param1 === 'Учебные планы' && <CurriculumForm form={form} setForm={setForm} setIsOpen={setIsOpen}/>}
+                    {param1 && param1 === 'Студенты' && <StudentForm form={form} setForm={setForm} setIsOpen={setIsOpen}/>}
+                    {param1 && param1 === 'Оценки' && <MarkForm form={form} setForm={setForm} setIsOpen={setIsOpen}/>}
                 </ModalForm>
             </Modal>,
             document.body

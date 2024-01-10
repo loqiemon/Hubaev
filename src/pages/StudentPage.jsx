@@ -1,67 +1,32 @@
-import {useEffect, useState} from "react";
-import React from "react";
+import styled, {keyframes} from 'styled-components';
+import {useNavigate, useParams} from "react-router-dom";
+import React, {useEffect, useState} from "react";
+import {getStudents} from "../services/userService.js";
+import ArrowLeft from '../assets/arrow-left.svg?react';
+import {Link} from "react-router-dom";
 
-
-import styled, { keyframes } from 'styled-components';
-import Arrow from '../assets/arrow.svg?react';
-import SearchIcon from '../assets/search.svg?react';
-import CloseIcon from '../assets/close.svg?react';
-import {useSearch} from "../hooks/useSearch.js";
-
+import Arrow from "../assets/arrow.svg?react";
+import {mock} from "./LearningPage.jsx";
+import CloseIcon from "../assets/close.svg";
+import SearchIcon from "../assets/search.svg";
 import {FilterModal} from "../components/FilterModal.jsx";
 import {Loader} from "../components/Loader.jsx";
-import {useFilter} from "../hooks/useFilter.jsx";
-import {getStudents} from "../services/userService.js";
-import {getProfScore, getProfScoreResult} from "../services/profScoreService.js";
-import {Link} from "react-router-dom";
-import {getEventResults, getEvents} from "../services/eventService.js";
+import {useSearch} from "../hooks/useSearch.js";
 
-
-const mock = [
-  {
-    title: "cредний профессиональный коэффициент",
-    value: 100,
-    percent: 10
-  },
-  {
-    title: "cтудентов в этом семестре участвовали в хакатонах",
-    value: 100,
-    percent: 10
-  },
-  {
-    title: "студентов в этом семестре одержали победы в хакатонах",
-    value: 100,
-    percent: 10
-  },
-  {
-    title: "студентов в этом семестре опубликовали научные статьи",
-    value: 100,
-    percent: 10
-  },
-  {
-    title: "средний балл по экзаменам прошлого семестра",
-    value: 100,
-    percent: 20
-  }
-]
-
-
-const CreativityPage = (props) => {
-  const {} = props
-  const [stats, setStats] = useState(mock);
-
+const StudentPage = (props) => {
+  const [student, setStudent] = useState({});
   const [filters, setFilters] = useState([]);
+  const [stats, setStats] = useState(mock);
+  const navigate = useNavigate();
+  const { student: student_id } = useParams();
+  const [resetFilters, setResetFilters] = useState(false);
   const [peopleStats, setpeopleStats] = useState([]);
   const {search, setSearch, searchedArray, setSearchedArray} = useSearch({array: peopleStats});
-  const [filterShow, setfilterShow] = useState(false);
-  const [resetFilters, setResetFilters] = useState(false);
 
-
-  useEffect(() => {
-    getEventResults()
-        .then(res => setpeopleStats(res))
-        .catch(err => console.log(err))
-  }, [filters]);
+    useEffect(() => {
+      getStudents(student_id)
+          .then(res => setStudent(res))
+    }, [student_id]);
 
   const filterReset = () => {
     let timer;
@@ -94,73 +59,116 @@ const CreativityPage = (props) => {
     });
   };
 
-
   return (
-      <Container>
-        <TopStats>
-          {stats.map((stat) => (
-              <TopStatsItem className='' key={stat.title}>
-                <Stats>
-                  <BigStat>{stat.value}</BigStat>
-                  <SmallStat className={'small'}>
-                    <Arrow />
-                    <span>{stat.percent}%</span>
-                  </SmallStat>
-                </Stats>
-                <StatDesctipion>{stat.title}</StatDesctipion>
-              </TopStatsItem>
-          ))}
-        </TopStats>
-        <SubContainer>
-          <Filters>
-            <LeftFilters>
-              {Object.entries(filters).map(([key, filter], index) => (
-                  <Filter
-                      key={filter.name}
-                      className={`filter-enter ${index} ${resetFilters ? 'filter-exit' : ''}`}
-                  >
-                    <span>{key === 'semester' ? `Семестр ${filter}` : filter}</span>
-                    <CloseIcon style={{stroke: '#212121'}} onClick={() => handleDeleteFilter(key)}/>
-                  </Filter>
-              ))}
-            </LeftFilters>
-            <RightFilters>
-              <Search>
-                <SearchIcon />
-                <input type="text" placeholder="Поиск" value={search} onChange={(event) => setSearch(event.target.value)}/>
-              </Search>
-              <FilterButton onClick={handleFilterShow}>Фильтр</FilterButton>
-              <FilterModal
-                  filterReset={filterReset}
-                  isActive={filterShow}
-                  handleFilterShow={handleFilterShow}
-                  setFilters={setFilters}
-              />
-            </RightFilters>
-          </Filters>
-          <Loader/>
-          <Table>
-            <span>ФИО</span>
-            <span>Группа</span>
-            <span>Курс</span>
-            <span>Направление</span>
-            <span>Профессиональный коэффициент</span>
-            {searchedArray.map((stat) => (
-                <React.Fragment key={stat.id}>
-                  <SpanLink to={`/student/${stat.id}`}>{stat.fio}</SpanLink>
-                  <span>{stat.group_name}</span>
-                  <span>{stat.group_name[5]}</span>
-                  <span>{stat.direction_name}</span>
-                  <span>{stat.score}</span>
-                </React.Fragment>
+    <Container>
+     <StudentInfo>
+        <LeftCorner>
+          <ArrowLeft style={{fill: '#212121'}} onClick={_ => navigate("/")} />
+          <span>{student.fio}</span>
+        </LeftCorner>
+       <RightCorner>
+         <span>{student.group_name}</span>
+         <span>{student.direction_name}</span>
+         <span>{student.fio}</span>
+         <span>{student.date_from}-{student.date_to}</span>
+       </RightCorner>
+     </StudentInfo>
+      <TopStats>
+        {stats.map((stat) => (
+            <TopStatsItem className='' key={stat.title}>
+              <Stats>
+                <BigStat>{stat.value}</BigStat>
+                <SmallStat className={'small'}>
+                  <Arrow />
+                  <span>{stat.percent}%</span>
+                </SmallStat>
+              </Stats>
+              <StatDesctipion>{stat.title}</StatDesctipion>
+            </TopStatsItem>
+        ))}
+      </TopStats>
+      <SubContainer>
+        <Filters>
+          <LeftFilters>
+            {Object.entries(filters).map(([key, filter], index) => (
+                <Filter
+                    key={filter.name}
+                    className={`filter-enter ${index} ${resetFilters ? 'filter-exit' : ''}`}
+                >
+                  <span>{key === 'semester' ? `Семестр ${filter}` : filter}</span>
+                  <CloseIcon style={{stroke: '#212121'}} onClick={() => handleDeleteFilter(key)}/>
+                </Filter>
             ))}
-          </Table>
-        </SubContainer>
-      </Container>
+          </LeftFilters>
+          {/*<RightFilters>*/}
+          {/*  <Search>*/}
+          {/*    <SearchIcon />*/}
+          {/*    <input type="text" placeholder="Поиск" value={search} onChange={(event) => setSearch(event.target.value)}/>*/}
+          {/*  </Search>*/}
+          {/*  <FilterButton onClick={handleFilterShow}>Фильтр</FilterButton>*/}
+          {/*  <FilterModal*/}
+          {/*      filterReset={filterReset}*/}
+          {/*      isActive={filterShow}*/}
+          {/*      handleFilterShow={handleFilterShow}*/}
+          {/*      setFilters={setFilters}*/}
+          {/*  />*/}
+          {/*</RightFilters>*/}
+        </Filters>
+        {/*<Loader/>*/}
+        {/*<Table>*/}
+        {/*  <span>ФИО</span>*/}
+        {/*  <span>Группа</span>*/}
+        {/*  <span>Курс</span>*/}
+        {/*  <span>Направление</span>*/}
+        {/*  <span>Профессиональный коэффициент</span>*/}
+        {/*  {searchedArray.map((stat) => (*/}
+        {/*      <React.Fragment key={stat.id}>*/}
+        {/*        <SpanLink to={`/student/${stat.id}`}>{stat.fio}</SpanLink>*/}
+        {/*        <span>{stat.group_name}</span>*/}
+        {/*        <span>{stat.group_name[5]}</span>*/}
+        {/*        <span>{stat.direction_name}</span>*/}
+        {/*        <span>{stat.score}</span>*/}
+        {/*      </React.Fragment>*/}
+        {/*  ))}*/}
+        {/*</Table>*/}
+      </SubContainer>
+    </Container>
   );
 };
 
-export {CreativityPage};
+export {StudentPage};
+
+const Container = styled.div`
+
+`
+
+const StudentInfo = styled.div`
+  padding: 40px 30px;
+  background: #fff;
+  position: relative;
+`
+
+const LeftCorner = styled.div`
+  display: flex;
+  gap: 50px;
+  align-items: center;
+  span {
+    color: #212121;
+    font-size: 26px;
+    font-weight: 600;
+  }
+`
+
+const RightCorner = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  color: #212121;
+  text-align: right;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+`
 
 const SpanLink = styled(Link)`
   padding-bottom: 10px;
@@ -181,7 +189,7 @@ const SpanLink = styled(Link)`
 const Table = styled.div`
   margin-top: 15px;
   display: grid;
-  grid-template-columns: 1fr 110px 65px 165px .5fr;
+  grid-template-columns: 1fr 110px 65px 140px .5fr;
   grid-auto-flow: row;
   color: #212121;
   span {
@@ -356,15 +364,10 @@ const Button = styled.button`
   
 `
 
-const Container = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  margin-top: 75px;
-`
 const TopStats = styled.div`
   display: flex;
   gap: 30px;
+  margin-top: 20px;
 `
 
 const TopStatsItem = styled.div`
@@ -420,8 +423,6 @@ const Stats = styled.div`
  justify-content: space-between;
   align-items: flex-end;
 `
-
-
 
 
 

@@ -6,16 +6,20 @@ import styled from "styled-components";
 import {LearningPage} from "./pages/LearningPage.jsx";
 import {SettingPage} from "./pages/SettingPage.jsx";
 import {CreativityPage} from "./pages/CreativityPage.jsx";
+import {StudentPage} from "./pages/StudentPage.jsx";
+import {SettingPageEvent} from "./pages/SettingPageEvent.jsx";
 
 function App() {
   return (
     <Container>
         <Navbar/>
-        <Routes>
-            <Route path="/" element={<LearningPage/>}/>
-            <Route path="/setting" element={<SettingPage/>}/>
-            <Route path="/Creativity" element={<CreativityPage/>}/>
-        </Routes>
+            <Routes>
+                <Route path="/" element={<LearningPage/>}/>
+                <Route path="/setting-group" element={<SettingPage/>}/>
+                <Route path="/setting-event/:path" element={<SettingPageEvent/>}/>
+                <Route path="/Creativity" element={<CreativityPage/>}/>
+                <Route path="/student/:student" element={<StudentPage/>}/>
+            </Routes>
     </Container>
   )
 }

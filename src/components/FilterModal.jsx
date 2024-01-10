@@ -1,23 +1,30 @@
 import styled from 'styled-components';
 import Select from './Select.jsx';
 import {useEffect, useState} from "react";
-import {getDirections, getGroups} from "../services/requests.js";
+import { getGroups} from "../services/requests.js";
+import {getDirections} from "../services/directionService";
 
 const FilterModal = (props) => {
   const {isActive, handleFilterShow, setFilters, filterReset} = props;
-  const [filtersBefore, setFiltersBefore] = useState([]);
+  const [filtersBefore, setFiltersBefore] = useState({});
   const [filtersOptions, setFiltersOptions] = useState({
-      'Семестр': [1, 2, 3, 4, 5, 6, 7, 8],
-      'Направление': [],
-      'Группа': []
+      'semester': [{value: 1}, {value: 2}, {value: 3}, {value: 4}, {value: 5}, {value: 6}, {value: 7}, {value: 8}],
+      'direction': [],
+      'group_name': []
   });
 
     useEffect(() => {
         getDirections().then(res => {
-            setFiltersOptions(prev => ({...prev, 'Направление': res}));
+            setFiltersOptions(prev => ({
+                ...prev,
+                'direction': res.map(item => ({ value: item.name }))
+            }));
         })
         getGroups().then(res => {
-            setFiltersOptions(prev => ({...prev, 'Группа': res}));
+            setFiltersOptions(prev => ({
+                ...prev,
+                'group_name': res.map(item => ({ value: item.name }))
+            }));
         })
     }, []);
 
@@ -31,29 +38,36 @@ const FilterModal = (props) => {
 
     const handleApply = () => {
         setFilters(prev => {
-            const updatedFilters = [...prev, ...filtersBefore];
-            setFiltersBefore([]);
+            const updatedFilters = {...filtersBefore};
+            console.log(filtersBefore)
             return updatedFilters;
         });
         handleFilterShow();
     }
 
-    const handleChange = (e) => {
+    const handleChange = (e, name) => {
         setFiltersBefore(prev => {
-            return [
+            const updatedFilters = {
                 ...prev,
-                e.target.value
-            ]
-        })
-    }
+                [name]: e.target.value
+            };
+
+            if (e.target.value === '') {
+                delete updatedFilters[name];
+            }
+
+            return updatedFilters;
+        });
+    };
+
 
   return (
     <Container className={isActive ? 'active' : ''}>
         <Title>Фильтр</Title>
         <SelectDiv>
-            <Select onChange={handleChange} options={filtersOptions.Семестр} label={'Семестр'} />
-            <Select onChange={handleChange} options={filtersOptions.Направление} label={'Направление'} />
-            <Select onChange={handleChange} options={filtersOptions.Группа} label={'Группа'} />
+            <Select value={filtersBefore['semester']} onChange={(e) => handleChange(e, 'semester')} name='semester' options={filtersOptions.semester} label={'Семестр'} value_field={'value'}  />
+            <Select value={filtersBefore['direction']} onChange={(e) => handleChange(e, 'direction')} name="direction" options={filtersOptions.direction} label={'Направление'} value_field={'value'}  />
+            <Select value={filtersBefore['group_name']} onChange={(e) => handleChange(e, 'group_name')} name="group_name" options={filtersOptions.group_name} label={'Группа'} value_field={'value'}  />
         </SelectDiv>
         <ButtonDiv>
             <Button onClick={handleReset}>Сбросить</Button>

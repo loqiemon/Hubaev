@@ -1,16 +1,19 @@
 import styled, {keyframes} from 'styled-components';
 import {useEffect, useState} from "react";
-import {url} from "../services/requests.js";
+import {deleteCurriculum, deleteDiscipline, deleteGroup, url} from "../services/requests.js";
 import axios from "axios";
 import {SettingsTable} from "../components/SettingsTable.jsx";
 import SearchIcon from "../assets/search.svg?react";
 import {FilterModal} from "../components/FilterModal.jsx";
 import {useSearch} from "../hooks/useSearch.js";
 import CloseIcon from "../assets/close.svg?react";
+import {deleteDirection} from "../services/directionService.js";
+import {deleteStudent} from "../services/userService.js";
+import {useLocation} from "react-router-dom";
 
 const types = {
-    'Направления': {name: 'directions', columns: 1},
-    'Дисциплины': {name: 'disciplines', columns: 1},
+    'Направления': {name: 'directions', columns: 2},
+    'Дисциплины': {name: 'disciplines', columns: 2},
     'Группы': {name: 'groups', columns: 4},
     'Студенты': {name: 'students', columns: 2},
     'Учебные планы': {name: 'curriculums', columns: 4}
@@ -20,8 +23,8 @@ const SettingPage = (props) => {
   const {} = props;
   const [type, setType] = useState('Направления');
   const [filterShow, setfilterShow] = useState(false);
-const [resetFilters, setResetFilters] = useState(false);
-const [filters, setFilters] = useState([{name: "Фильтр 1"}, {name: "Фильтр 2"}, {name: "Фильтр 3"}]);
+  const [resetFilters, setResetFilters] = useState(false);
+  const [filters, setFilters] = useState([{name: "Фильтр 1"}, {name: "Фильтр 2"}, {name: "Фильтр 3"}]);
   const [data, setData] = useState({
     'Направления': [],
     'Дисциплины': [],
@@ -30,7 +33,13 @@ const [filters, setFilters] = useState([{name: "Фильтр 1"}, {name: "Фил
     'Учебные планы': []
   });
     const {search, setSearch, searchedArray, setSearchedArray} = useSearch({array: data[type]});
+    const location = useLocation();
 
+    const { search1 } = location;
+    const queryParams = new URLSearchParams(search1);
+
+
+    const locationParam = queryParams.get('location');
   useEffect(() => {
     if (data[type].length === 0) {
       axios.get(`${url}/${types[type].name}`)
@@ -77,6 +86,15 @@ const [filters, setFilters] = useState([{name: "Фильтр 1"}, {name: "Фил
     setType(type);
   }
 
+  const handleDelete = (func, typeFunc, id) => {
+     func(id).then(res => {
+         setData(prev => {
+             return {...prev, [typeFunc]: prev[typeFunc].filter(item => item.id !== res.id)}
+         })
+     })
+  }
+
+
   return (
     <Container>
       <Links>
@@ -114,11 +132,11 @@ const [filters, setFilters] = useState([{name: "Фильтр 1"}, {name: "Фил
             </RightFilters>
         </Filters>
 
-        {type === 'Направления' && <SettingsTable columns={1} labels={["Направление"]} data={searchedArray} fields={['name']}/>}
-        {type === 'Дисциплины' && <SettingsTable columns={1} labels={["Дисциплина"]} data={searchedArray} fields={['name']}/>}
-        {type === 'Группы' && <SettingsTable columns={4} labels={["Группа", "Направление", "Год начала", 'Год окончания']} data={searchedArray} fields={['group_name', 'direction_name', 'date_from', 'date_to']}/>}
-        {type === 'Студенты' && <SettingsTable columns={2} labels={["Фио", "Группа"]} data={searchedArray} fields={['fio', 'group_name']}/>}
-        {type === 'Учебные планы' && <SettingsTable columns={4} labels={["Направление", "Дисциплина", "Экзамен", 'Семестр']} data={searchedArray} fields={['direction_name', 'discipline_name', 'typeExam', 'semester']}/>}
+        {type === 'Направления' && <SettingsTable onDelete={id => handleDelete( deleteDirection, "Направления", id)} columns={2} labels={["Направление", '']} data={searchedArray} fields={['name']}/>}
+        {type === 'Дисциплины' && <SettingsTable onDelete={id =>handleDelete( deleteDiscipline, "Дисциплины", id)}  columns={2} labels={["Дисциплина", '']} data={searchedArray} fields={['name']}/>}
+        {type === 'Группы' && <SettingsTable onDelete={id => handleDelete(deleteGroup, "Группы", id)} columns={5} labels={["Группа", "Направление", "Год начала", 'Год окончания', '']} data={searchedArray} fields={['name', 'direction_name', 'date_from', 'date_to']}/>}
+        {type === 'Студенты' && <SettingsTable onDelete={id => handleDelete(deleteStudent, "Студенты", id)} columns={3} labels={["Фио", "Группа", '']} data={searchedArray} fields={['fio', 'group_name']}/>}
+        {type === 'Учебные планы' && <SettingsTable onDelete={id => handleDelete(deleteCurriculum, "Учебные планы", id) } columns={5} labels={["Направление", "Дисциплина", "Экзамен", 'Семестр', '']} data={searchedArray} fields={['direction_name', 'discipline_name', 'typeExam', 'semester']}/>}
     </Container>
   );
 };

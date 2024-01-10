@@ -1,36 +1,36 @@
 import styled from 'styled-components';
+import {addDiscipline} from "../../services/requests.js";
 import {addDirection} from "../../services/directionService";
 
-const DirectionForm = (props) => {
-  const {} = props;
-
+const DisciplineForm = (props) => {
   const clearForm = () => {
     props.setForm(prev => ({...prev, name: ''}));
   }
 
   const handleAdd = () => {
     if (props.form.name) {
-      addDirection(props.form).finally(_ => props.setIsOpen(false));;
+      addDiscipline(props.form).finally(_ => props.setIsOpen(false));;
       clearForm();
     }
   }
 
   return (
-    <Container>
+      <Container>
         <Input
-            placeholder="Название направления"
+            placeholder="Название дисциплины"
             value={props.form.name}
             onChange={e => props.setForm(prev => ({...prev, name: e.target.value}))}
         />
         <ButtonDiv>
-            <Button onClick={clearForm}>Сбросить</Button>
-            <Button onClick={handleAdd}>Добавить</Button>
+          <Button onClick={clearForm}>Сбросить</Button>
+          <Button onClick={handleAdd}>Добавить</Button>
         </ButtonDiv>
-    </Container>
+      </Container>
   );
 };
 
-export {DirectionForm};
+export {DisciplineForm};
+
 
 const ButtonDiv = styled.div`
   margin-top: 60px;
@@ -73,4 +73,3 @@ const Input = styled.input`
   width: 100%;
   padding-bottom: 5px;
 `
-
